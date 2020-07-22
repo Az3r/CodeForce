@@ -11,11 +11,12 @@
 #include <climits>
 #include <algorithm>
 
+int n;
+std::vector<int> contests;
+int predicate(int k, int start);
 int main()
 {
-    int n;
     std::cin >> n;
-    std::vector<int> contests(n);
     for (int i = 0; i < n; i++)
     {
         int problems;
@@ -23,34 +24,30 @@ int main()
         contests.push_back(problems);
     }
 
-    // find the index whose value which is closest to given days
-    auto findClosestValue = [&contests](int k) {
-        int value = INT_MAX;
-        int index = INT_MAX;
-        for (size_t i = 0; i < contests.size(); i++)
-        {
-            int problems = contests[i];
-            if (problems >= k && problems - k < value) {
-                value = problems;
-                index = i;
-            }
-        }
-        return index;
-    };
+    std::sort(contests.begin(), contests.end());
 
-    int days = 1;
-    while (days <= n)
+    /**
+     * first sort the contests ascending
+     * for day k, find the contest whose number of problems is the closest to but bigger than k, method is expressed in function predicate
+     * if no such contest is found, return total of trained days which is (k - 1)
+     * because at the following day k + 1, every contest before has the number of problems < k,
+     * algorithm can save time by starting at the next contest without searching from the start of the list
+    */
+
+
+    int start = 0;
+    int days = 0;
+    while (++days <= n)
     {
-        int index = findClosestValue(days);
-        if (index == INT_MAX)
-        {
-            --days;
-            break;
-        }
-        contests[index] = days;
-        ++days;
+        int k = predicate(days, start);
+        if (k >= contests.size()) break;
+        start = k + 1;
     }
-    std::cout << days << std::endl;
-
+    std::cout << days - 1 << std::endl;
     return 0;
+}
+int predicate(int k, int start) {
+    static int size = contests.size();
+    while (start < size && contests[start] < k) ++start;
+    return start; 
 }
